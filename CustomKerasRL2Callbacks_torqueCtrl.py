@@ -203,7 +203,7 @@ class StoreEpisodeLogger(Callback):
                 omega_0 = self.speed_generator.upcoming_speed * self.env.env.env.physical_system.limits[0]
 
                 # the utilized exploring starts strategy uses parameter knowledge to speed up the training, which is helpful but not obligatory
-		# the agent itself has no parameter knowledge
+		        # the agent itself has no parameter knowledge
                 guaranteed_in_ellipsis = True
                 if guaranteed_in_ellipsis:
                     psi_p = self.env.env.env.physical_system.electrical_motor.motor_parameter["psi_p"]

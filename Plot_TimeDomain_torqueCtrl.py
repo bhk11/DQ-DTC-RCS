@@ -4,8 +4,13 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
+from copy import deepcopy
 
-def calculate_performance_metrics(i_d, i_q, T, T_ref):
+import gym_electric_motor as gem
+from gym_electric_motor.physical_systems import FiniteB6BridgeConverter
+
+
+def calculate_performance_metrics(i_d, i_q, T, T_ref, action):
     """
     This function will calculate the performance metrics of the measured data i_d, i_q, T on a given torque profile T_ref.
     All input data needs to be normalized!
@@ -52,11 +57,22 @@ def calculate_performance_metrics(i_d, i_q, T, T_ref):
 
         r_sum += rew
 
+    sw_actions = 0
+    DELTA = np.hstack((-np.identity(3), np.identity(3)))
+    subactions = -np.power(-1, FiniteB6BridgeConverter._subactions)
+    for i in range(len(action)-1):
+        U_m = np.reshape((subactions[action[i]],subactions[action[(i+1)]]),(6,1))
+        sw = np.sum(np.absolute(DELTA @ U_m))
+        sw_actions += sw
+
+    sw_freq = sw_actions*20000/(6*2*len(action))
+
     print(f"Mean Reward: {r_sum / len(T)}")
     print(f"Torque MSE: {squared_error_torque / len(T)}")
     print(f"Torque MAE: {absolute_error_torque / len(T)}")
     print(f"Current RMS: {np.sqrt(squared_stator_current / len(T))}")
     print(f"in episode of length {len(T)}")
+    print(f"switching frequency {sw_freq}")
 
     return r_sum / len(T)
 
@@ -132,8 +148,30 @@ def plot_episode(training_folder, episode_number, episode_type="training_episode
               "psi_p": 65.65e-3}
     torque_tolerance = 5 # in Nm
 
+    vec = deepcopy(obs[7:10])
+    
+    acts_ = []
+
+    for _a in np.arange(0, len(obs[0]), 1):
+        if np.array_equal([vec[0][_a],vec[1][_a],vec[2][_a]],[-1, -1, -1]):
+            acts_.append(0)
+        elif np.array_equal([vec[0][_a],vec[1][_a],vec[2][_a]],[-1, -1, 1]):
+            acts_.append(5)
+        elif np.array_equal([vec[0][_a],vec[1][_a],vec[2][_a]],[-1, 1, -1]):
+            acts_.append(3)
+        elif np.array_equal([vec[0][_a],vec[1][_a],vec[2][_a]],[-1, 1, 1]):
+            acts_.append(4)
+        elif np.array_equal([vec[0][_a],vec[1][_a],vec[2][_a]],[1, -1, -1]):
+            acts_.append(1)
+        elif np.array_equal([vec[0][_a],vec[1][_a],vec[2][_a]],[1, -1, 1]):
+            acts_.append(6)
+        elif np.array_equal([vec[0][_a],vec[1][_a],vec[2][_a]],[1, 1, -1]):
+            acts_.append(2)
+        elif np.array_equal([vec[0][_a],vec[1][_a],vec[2][_a]],[1, 1, 1]):
+            acts_.append(7)
+
     # calculate the performance in the specified measurement
-    calculate_performance_metrics(obs[5], obs[6], obs[1], obs[14])
+    calculate_performance_metrics(obs[5], obs[6], obs[1], obs[14], acts_)
 
     # mechanical observations
     obs[0] = lim[0] * obs[0]
@@ -250,7 +288,7 @@ def plot_episode(training_folder, episode_number, episode_type="training_episode
     for i in range(1, 7, 1):
         radius = 270
         angle = 2 * np.pi / 6 * (i - 1)
-        switch_order = [0, 4, 6, 2, 3, 1, 5, 7]
+        switch_order = [0,1,2,3,4,5,6,7]#[0, 4, 6, 2, 3, 1, 5, 7]
         plt.text(radius * np.cos(angle), radius * np.sin(angle), switch_order[i], ha="center", va="center")
     plt.text(0, 0, "0,7", ha="center", va="center")
     plt.grid(True)
@@ -338,10 +376,13 @@ def plot_episode(training_folder, episode_number, episode_type="training_episode
     plt.ylabel(r'$\omega_\mathrm{me} / \frac{1}{\mathrm{s}}$')
     plt.grid(True)
 
+    
     # plot the selected actions / switching states over time
+
     plt.subplot(12, 3, (27, 30))
     plt.title(r"Action")
-    plt.scatter(t, acts)
+    #plt.scatter(t, acts[np.arange(f_start, f_end, 1)])
+    plt.scatter(t, acts_)
     plt.xlabel(r'$t / \mathrm{ms}$')
     plt.ylabel(r"Switch state")
     plt.grid(True)
@@ -360,4 +401,5 @@ def plot_episode(training_folder, episode_number, episode_type="training_episode
     plt.savefig(plotName, bbox_inches='tight')
 
     plt.close()
+
 
