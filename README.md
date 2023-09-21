@@ -19,11 +19,12 @@ Please use the following BibTeX entry to cite this code:
 
 ```
 @INPROCEEDINGS{DQ-DTC-RCS,
-  author={Haucke-Korber, Barnabas and Schenke, Maximilian and Wallscheid, Oliver},  
+  author={Haucke-Korber, Barnabas and Schenke, Maximilian and Wallscheid, Oliver},
   booktitle={2023 IEEE International Electric Machines & Drives Conference (IEMDC)}, 
   title={Deep Q Direct Torque Control with a Reduced Control Set Towards Six-Step Operation of Permanent Magnet Synchronous Motors}, 
   year={2023},
   volume={},
   number={},
-  pages={1-7}}
+  pages={1-7},
+  doi={10.1109/IEMDC55163.2023.10239018}}
 ```
