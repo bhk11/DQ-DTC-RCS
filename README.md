@@ -1,6 +1,6 @@
 # Deep Q Direct Torque Control with a Reduced Control Set (DQ-DTC-RCS) - Code Examples
 
-[Read the Paper](https://ieeexplore.ieee.org/document/9416143)
+[Read the Paper](https://ieeexplore.ieee.org/document/10239018)
 
 The jupyter notebooks in this folder were created to present the training and usage of a DQ-DTC-RCS reinforcement learning drive control system. A deep Q direct torque controller can be trained via the DQ_DTC_training.ipynb notebook. The trained controller can then be tested with the DQ_DTC_validation_profile.ipynb notebook.
 
